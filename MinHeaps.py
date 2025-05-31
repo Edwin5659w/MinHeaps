@@ -10,61 +10,118 @@ class Tarea:
         return f"{self.nombre} (Prioridad: {self.prioridad})"
 
 class MinHeap:
-    def __init__(self, max_size):
-        self.heap = [None] * max_size
+    def __init__(self, maxSize):
+        self.maxSize = maxSize
         self.size = 0
-        self.max_size = max_size
+        self.heap = [0] * maxSize
 
-    def parent_index(self, i):
+    def parentIndex(self, i):
         return (i - 1) // 2
 
-    def left_child_index(self, i):
+    def leftChildIndex(self, i):
         return 2 * i + 1
 
-    def right_child_index(self, i):
+    def rightChildIndex(self, i):
         return 2 * i + 2
 
-    def is_leaf(self, i):
-        return self.left_child_index(i) >= self.size
+    def isLeaf(self, i):
+        return self.leftChildIndex(i) >= self.size
 
     def swap(self, i, j):
         self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
 
-    def insert(self, tarea):
-        if self.size >= self.max_size:
-            print("Heap lleno. No se puede insertar.")
+    def insert(self, value):
+        if self.size >= self.maxSize:
+            print("Heap lleno")
             return
-
-        self.heap[self.size] = tarea
+        
+        self.heap[self.size] = value
         current = self.size
+
+        while current > 0 and self.heap[current] < self.heap[self.parentIndex(current)]:
+            self.swap(current, self.parentIndex(current))
+            current = self.parentIndex(current)
+
         self.size += 1
 
-        while current > 0 and self.heap[current] < self.heap[self.parent_index(current)]:
-            self.swap(current, self.parent_index(current))
-            current = self.parent_index(current)
-
-    def min_heapify(self, i):
-        if not self.is_leaf(i):
-            left = self.left_child_index(i)
-            right = self.right_child_index(i)
+    def minHeapify(self, i):
+        if not self.isLeaf(i):
+            left = self.leftChildIndex(i)
+            right = self.rightChildIndex(i)
             smallest = i
 
             if left < self.size and self.heap[left] < self.heap[smallest]:
                 smallest = left
             if right < self.size and self.heap[right] < self.heap[smallest]:
                 smallest = right
-
             if smallest != i:
                 self.swap(i, smallest)
-                self.min_heapify(smallest)
+                self.minHeapify(smallest)
 
-    def extract_min(self):
-        if self.size == 0:
-            print("Heap vacío.")
+    def extractMin(self):
+        if self.size <= 0:
+            print("Heap vacío")
             return None
-
-        min_elem = self.heap[0]
+        
+        min = self.heap[0]
         self.heap[0] = self.heap[self.size - 1]
         self.size -= 1
-        self.min_heapify(0)
-        return min_elem
+        self.minHeapify(0)
+        return min
+    
+    def extractMax(self):
+        if self.size <= 0:
+            print("Heap vacío")
+            return None
+        max_index = 0
+        for i in range(1, self.size):
+            if self.heap[i] > self.heap[max_index]:
+                max_index = i
+        max_value = self.heap[max_index]
+        self.heap[max_index] = self.heap[self.size - 1]
+        self.size -= 1
+        self.minHeapify(max_index)
+        return max_value
+
+# Imprime todas las tareas en el heap (no necesariamente ordenadas)
+    def printHeap(self):
+        for i in range(self.size):
+            print(self.heap[i])
+
+    # Extrae e imprime todas las tareas en orden de prioridad
+    def extract_all(self):
+        print("\nExtrayendo todas las tareas ordenadas por prioridad:")
+        while self.size > 0:
+            tarea = self.extractMin()
+            print(tarea)
+
+
+# Ejemplo de uso
+if __name__ == "__main__":
+    max_size = 10
+    min_heap = MinHeap(max_size)
+
+    tareas = [
+        Tarea("Mercar", 3),
+        Tarea("estudiar para el Examen", 4),
+        Tarea("Llamar a Mamá", 1),
+        Tarea("Pagar los Servicios", 2),
+        Tarea("Lavar los Trastes", 8)
+    ]
+
+    for tarea in tareas:
+        min_heap.insert(tarea)
+
+    print("Contenido del MinHeap:")
+    min_heap.printHeap()
+
+    print("\nExtrayendo la tarea con mayor prioridad:")
+    max_tarea = min_heap.extractMin()
+    print(max_tarea)
+
+    print("\nExtrayendo la tarea con menor prioridad:")
+    min_tarea = min_heap.extractMax()
+    print(min_tarea)
+
+    min_heap.extract_all()
+
